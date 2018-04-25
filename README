@@ -1,0 +1,208 @@
+XML EZ_Out
+
+Version 1.06
+============
+
+XML EZ_Out is a small set of packages intended to aid the creation of
+XML-formatted output from within Ada programs.  It basically wraps the
+tags and data provided to it with XML syntax and writes them to a
+user-supplied medium.
+
+This medium can be any sort of writable entity, such as a file, a
+memory buffer, or even a communications link, such as a socket.  The
+only functionality required of the medium is that it supply a
+meaningful "Put" (for writing a string) and "New_Line" procedure.
+
+Usage
+=====
+
+IMPORTANT!!
+
+XML EZ_Out package instantiations are explicitly designed to be made
+directly visible with the aid of a "use" clause!  Declining to use a
+"use" will make using EZ_Out inordinately verbose and awkward to use.
+So use "use", and get a waiver from your programming standard if you
+have to!
+
+The key facilitator of making XML EZ_Out usage readable when
+generating XML documentation is the overloading of a number of
+variations of the "=" function.  By doing this, a simple XML element
+having no content, such as:
+
+<player lastName="Cuddyer" firstName="Michael" team="Twins"/>
+
+can be generated as:
+
+Output_Tag(F,
+	   "player",
+	   ("lastName"  = "Cuddyer",
+	    "firstName" = "Michael",
+	    "team"      = "Twins"));
+
+To simplify the specification of the attributes, variations of "=" are
+provided.  Given these declarations:
+
+    Batting_Average : Float;
+    At_Bats         : Natural;
+
+One can directly reference the variables:
+
+Output_Tag(F,
+           "stats",
+	   ("battingAvg" = Batting_Average,
+            "atBats"     = At_Bats));
+
+Elements that contain a number of nested sub-elements begin with a
+Start_Element call and are terminated with an End_Element invocation.
+Attribute/value pairs can be specified in the Start_Element call,
+which is then followed by calls to Output_Tag, more
+Start_Element/End_Element calls, and an Output_Content for any data
+that makes up the textual body of the element.
+
+The only functions that you really need to know to use XML EZ_Out are:
+	Output_XML_Header
+	Output_Processing_Instruction
+	Output_Element
+	Output_Tag
+	Start_Element
+	End_Element
+	Output_Content
+
+The "use" of the instantiated package will take of the rest.
+
+For an example set of intantiations and usages of the file and
+buffering capabilities of XML EZ_Out, see the tmeztf.adb program.
+
+
+The generic specification for EZ_Out is:
+
+generic
+
+   type Output_Medium is limited private;
+
+   with procedure Put(F : in Output_Medium;
+                      S : in String) is <>;
+   with procedure New_Line (F       : in Output_Medium;
+                            Spacing : in Ada.Text_IO.Positive_Count := 1) is <>;
+
+   -- DEPRECATED
+   -- Control formatting by setting the Current_Format variable in the
+   -- package spec.
+   --
+   -- Specify whether the XML that is created is to have indenting and
+   -- line breaks.
+   Format : Formatting_Options := Spread_Indented;
+   -- DEPRECATED
+
+   -- The maximum element nesting depth of an XML document
+   Max_Element_Nesting : Positive := 200;
+
+package McKae.XML.EZ_Out.Generic_Medium;
+
+
+Output_Medium is whatever entity is going to received the formatted
+XML output.  As mentioned previously, it can be a file, a stream, a
+buffer, a socket, whatever.  All interaction with it takes place
+solely through the supplied Put and New_Line procedures, which are
+obviously modeled after the Ada.Text_IO versions.
+
+The Format parameter is now deprecated.  Its functionality is now
+provided by the Current_Format variable in the package specification.
+The value for the generic Format parameter is now simply used as the
+inital setting for Current_Format.  Format may be removed in some
+future release.
+
+Format, or better yet, its replacement, Current_Format, can be set to
+either Continuous_Stream or Spread_Indented.  Continuous_Stream simply
+produces a continuous stream of XML content, with no indentation or
+line breaks.  This mode reduces bandwidth and storage requirements, at
+the cost of not being the easiest to read in its raw form.
+Spread_Indented provides a more human-readable arrangement of the
+content.
+
+Max_Element_Nesting is used to set the size of an internal stack that
+keeps track of the start and end tags of the document under
+construction.  Documents probably aren't going to exceed the default
+200-level nesting very often, but if that happens, simply increase it.
+
+To see the exceptions that can be raised by misusing XML EZ_Out, check
+the definitions in McKae.XML.EZ_Out.
+
+Auxiliary Packages
+==================
+
+Two auxiliary packages are provided with this distribution:
+McKae.XML.EZ_Out.Text_File, and McKae.XML.EZ_Out.String_Stream.
+
+Text_File is simply an instantiation of the core Generic_Medium
+package with Ada.Text_IO.File_Type, providing a ready-to-go package
+for writing XML to ordinary text files.
+
+String_Stream uses an in-memory buffer to hold the generated XML text,
+with a Get_String function for retrieving the entire generated
+document as a string with one call.
+
+
+Caveats
+=======
+
+Be aware that XML EZ_Out does no validation of the XML content it is
+being asked to output, and it is possible to generate malformed
+documents.  That includes the handling of character encoding.  While
+XML_EZ_Out will claim the document is "UTF-8" or otherwise as set by
+the application, it is up to the application to ensure that correct
+content is provided in the strings that are passed to its various
+subprograms.  Used appropriately, though, it can provide a clear and
+readable means to aid the dynamic generation of XML content by Ada
+programs.
+
+Revision History
+================
+
+Changes since 1.05:
+
+o Fixed bug where calling Output_Content with a negative integer or
+float argument would drop the leading minus sign
+
+o Added ability to completely deallocate memory used by the
+String_Stream package. [Patch provided by Xavier Grave.]
+
+Changes since 1.04:
+
+o Deprecated the Format generic parameter, replacing it with a
+Current_Format variable in the package specification.
+
+o Added a package variable Default_Output_Null_Attributes.  If True,
+attributes whose value is an empty string will be output with that
+empty string as the attribute's value.  If False (which is the
+default), output of the attribute is omitted.  [Requested by Niklas
+Holsti.]
+
+Changes since 1.03:
+
+o Added quote and apostrophe substitution ("&quot;" and &apos;")
+within attribute values.
+
+Changes since 1.02:
+
+o Corrected bug in "&amp;" for "&" substition.
+
+Changes since 1.01:
+
+o Added attribute specification functions ("=") for single character
+values.
+
+Changes since 1.00:
+
+o Fixed problem with attributes being given negative numeric values.
+The minus sign was being dropped.
+
+o If an attribute value is an empty string ("") or
+Null_Unbounded_String, then generation of that attribute specification
+is skipped.
+
+==================
+Marc A. Criley
+McKae Technologies
+www.mckae.com
+Last updated:  23 Sep 2006
