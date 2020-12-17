@@ -2,7 +2,7 @@
 --                                                                    --
 --                     McKae Software Utilities                       --
 --                                                                    --
---           Copyright (C) 2004 McKae Technologies                    --
+--           Copyright (C) 2003 McKae Technologies                    --
 --                                                                    --
 -- The  McKae   software  utilities   are  free  software;   you  can --
 -- redistribute it  and/or modify it  under terms of the  GNU General --
@@ -26,8 +26,8 @@
 --                                                                    --
 ------------------------------------------------------------------------
 
-package McKae.XML is
+The above license is the GNAT Modified General Public License:
+https://www.copyleftlicense.com/licenses/gnat-modified-general-public-license-(gmgpl)-version-10/
 
-   pragma Pure;
-
-end McKae.XML;
+This copy of the software is maintained by the Alire Project at
+https://github.com/alire-project/xmlezout/

@@ -24,8 +24,6 @@
 -- exception does  not however invalidate  any other reasons  why the --
 -- executable file might be covered by the GNU Public License.        --
 --                                                                    --
--- The McKae Software Utilities  are maintained by McKae Technologies --
--- (http://www.mckae.com).                                            --
 ------------------------------------------------------------------------
 
 with Mckae.XML.EZ_Out.Generic_Medium;
